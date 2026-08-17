@@ -60,7 +60,7 @@ func (s *Service) ListTickets(ctx context.Context, user model.User, filter model
 		return nil, err
 	}
 	now := s.now()
-	items := make([]model.TicketListItem, 0, len(tickets))
+	items := emptyTicketList()
 	for _, ticket := range tickets {
 		status, breached := sla.Status(now, ticket.SLADueAt)
 		items = append(items, model.TicketListItem{
@@ -69,7 +69,7 @@ func (s *Service) ListTickets(ctx context.Context, user model.User, filter model
 			SLABreached: breached,
 		})
 	}
-	return items, nil
+	return normalizeTicketListItems(items), nil
 }
 
 func (s *Service) GetTicket(ctx context.Context, user model.User, ticketID int64) (model.Ticket, error) {
@@ -187,14 +187,22 @@ func (s *Service) History(ctx context.Context, user model.User, ticketID int64) 
 	if err := s.ensureCanView(user, ticket); err != nil {
 		return nil, err
 	}
-	return s.repo.ListHistory(ctx, ticketID)
+	history, err := s.repo.ListHistory(ctx, ticketID)
+	if err != nil {
+		return nil, err
+	}
+	return normalizeHistoryList(history), nil
 }
 
 func (s *Service) Statistics(ctx context.Context, user model.User) (model.Statistics, error) {
 	if user.Role != model.RoleSupervisor {
 		return model.Statistics{}, ErrForbidden
 	}
-	return s.repo.Statistics(ctx, s.now())
+	stats, err := s.repo.Statistics(ctx, s.now())
+	if err != nil {
+		return model.Statistics{}, err
+	}
+	return normalizeStatistics(stats), nil
 }
 
 func (s *Service) ensureCanView(user model.User, ticket model.Ticket) error {
