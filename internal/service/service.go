@@ -109,7 +109,7 @@ func (s *Service) ClaimTicket(ctx context.Context, agent model.User, ticketID in
 		return model.Ticket{}, err
 	}
 	if !isClaimableStatus(ticket.Status) {
-		return model.Ticket{}, fmt.Errorf("%w: ticket cannot be claimed from status %s", ErrInvalidTransition, ticket.Status)
+		return model.Ticket{}, claimTransitionError(ticket.Status)
 	}
 	return s.repo.ClaimTicket(ctx, ticketID, agent.ID)
 }
@@ -126,10 +126,10 @@ func (s *Service) UpdateStatus(ctx context.Context, operator model.User, input U
 		return model.Ticket{}, fmt.Errorf("%w: unsupported status", ErrInvalidInput)
 	}
 	if !canTransition(ticket.Status, input.ToStatus) {
-		return model.Ticket{}, fmt.Errorf("%w: %s -> %s", ErrInvalidTransition, ticket.Status, input.ToStatus)
+		return model.Ticket{}, fmt.Errorf("%v: %s -> %s", ErrInvalidTransition, ticket.Status, input.ToStatus)
 	}
 	if input.ToStatus == model.StatusResolved && strings.TrimSpace(input.Result) == "" {
-		return model.Ticket{}, fmt.Errorf("%w: result is required when resolving a ticket", ErrInvalidInput)
+		return model.Ticket{}, resolveWithoutResultError()
 	}
 	params := model.UpdateStatusParams{
 		TicketID:     input.TicketID,
