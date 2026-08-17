@@ -194,7 +194,20 @@ func (s *Service) Statistics(ctx context.Context, user model.User) (model.Statis
 	if user.Role != model.RoleSupervisor {
 		return model.Statistics{}, ErrForbidden
 	}
-	return s.repo.Statistics(ctx, s.now())
+	stats, err := s.repo.Statistics(ctx, s.now())
+	if err != nil {
+		return model.Statistics{}, err
+	}
+	if stats.ByStatus == nil {
+		stats.ByStatus = map[string]int64{}
+	}
+	if stats.ByPriority == nil {
+		stats.ByPriority = map[string]int64{}
+	}
+	if stats.ByAssignee == nil {
+		stats.ByAssignee = map[string]int64{}
+	}
+	return stats, nil
 }
 
 func (s *Service) ensureCanView(user model.User, ticket model.Ticket) error {
