@@ -28,19 +28,8 @@ func (s *Service) CreateTicket(ctx context.Context, user model.User, input Creat
 	if user.Role != model.RoleCustomer {
 		return model.Ticket{}, ErrForbidden
 	}
-	input.Title = strings.TrimSpace(input.Title)
-	input.Description = strings.TrimSpace(input.Description)
-	if input.Title == "" {
-		return model.Ticket{}, fmt.Errorf("%w: title is required", ErrInvalidInput)
-	}
-	if !model.ValidTicketType(input.Type) {
-		return model.Ticket{}, fmt.Errorf("%w: unsupported type", ErrInvalidInput)
-	}
-	if input.Priority == "" {
-		input.Priority = model.PriorityNormal
-	}
-	if !model.ValidPriority(input.Priority) {
-		return model.Ticket{}, fmt.Errorf("%w: unsupported priority", ErrInvalidInput)
+	if err := validateCreateTicket(&input); err != nil {
+		return model.Ticket{}, err
 	}
 	return s.repo.CreateTicket(ctx, model.CreateTicketParams{
 		CustomerID:  user.ID,
