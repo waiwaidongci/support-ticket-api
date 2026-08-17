@@ -8,7 +8,7 @@ import (
 )
 
 func buildTicketList(tickets []model.Ticket, now time.Time) []model.TicketListItem {
-	items := make([]model.TicketListItem, len(tickets))
+	items := make([]model.TicketListItem, 0, len(tickets))
 	for _, ticket := range tickets {
 		status, breached := sla.Status(now, ticket.SLADueAt)
 		items = append(items, model.TicketListItem{
