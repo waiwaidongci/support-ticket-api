@@ -111,14 +111,11 @@ func (s *Service) UpdateStatus(ctx context.Context, operator model.User, input U
 	if err := s.ensureCanOperate(operator, ticket); err != nil {
 		return model.Ticket{}, err
 	}
-	if !model.ValidStatus(input.ToStatus) {
-		return model.Ticket{}, fmt.Errorf("%w: unsupported status", ErrInvalidInput)
+	if err := validateUpdateStatusInput(&input); err != nil {
+		return model.Ticket{}, err
 	}
 	if !canTransition(ticket.Status, input.ToStatus) {
 		return model.Ticket{}, fmt.Errorf("%w: %s -> %s", ErrInvalidTransition, ticket.Status, input.ToStatus)
-	}
-	if input.ToStatus == model.StatusResolved && strings.TrimSpace(input.Result) == "" {
-		return model.Ticket{}, fmt.Errorf("%w: result is required when resolving a ticket", ErrInvalidInput)
 	}
 	params := model.UpdateStatusParams{
 		TicketID:     input.TicketID,
@@ -139,10 +136,8 @@ func (s *Service) UpdateResolution(ctx context.Context, operator model.User, inp
 	if err := s.ensureCanOperate(operator, ticket); err != nil {
 		return model.Ticket{}, err
 	}
-	input.Result = strings.TrimSpace(input.Result)
-	input.Note = strings.TrimSpace(input.Note)
-	if input.Result == "" {
-		return model.Ticket{}, fmt.Errorf("%w: result is required", ErrInvalidInput)
+	if err := validateUpdateResolutionInput(&input); err != nil {
+		return model.Ticket{}, err
 	}
 	return s.repo.UpdateResolution(ctx, model.UpdateResolutionParams{
 		TicketID: input.TicketID,
@@ -155,8 +150,8 @@ func (s *Service) SetPriority(ctx context.Context, supervisor model.User, input 
 	if supervisor.Role != model.RoleSupervisor {
 		return model.Ticket{}, ErrForbidden
 	}
-	if !model.ValidPriority(input.Priority) {
-		return model.Ticket{}, fmt.Errorf("%w: unsupported priority", ErrInvalidInput)
+	if err := validateSetPriorityInput(&input); err != nil {
+		return model.Ticket{}, err
 	}
 	if _, err := s.repo.GetTicketByID(ctx, input.TicketID); err != nil {
 		return model.Ticket{}, err
