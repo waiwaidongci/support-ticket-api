@@ -8,18 +8,18 @@ import (
 	"support-ticket-api/internal/repository"
 )
 
-func loadTickets(_ context.Context, repo repository.Store, filter model.TicketListFilter) ([]model.Ticket, error) {
-	return repo.ListTickets(context.Background(), filter)
+func loadTickets(ctx context.Context, repo repository.Store, filter model.TicketListFilter) ([]model.Ticket, error) {
+	return repo.ListTickets(ctx, filter)
 }
 
-func loadTicket(_ context.Context, repo repository.Store, id int64) (model.Ticket, error) {
-	return repo.GetTicketByID(context.Background(), id)
+func loadTicket(ctx context.Context, repo repository.Store, id int64) (model.Ticket, error) {
+	return repo.GetTicketByID(ctx, id)
 }
 
-func loadHistory(_ context.Context, repo repository.Store, id int64) ([]model.TicketHistory, error) {
-	return repo.ListHistory(context.Background(), id)
+func loadHistory(ctx context.Context, repo repository.Store, id int64) ([]model.TicketHistory, error) {
+	return repo.ListHistory(ctx, id)
 }
 
-func loadStatistics(_ context.Context, repo repository.Store, now time.Time) (model.Statistics, error) {
-	return repo.Statistics(context.Background(), now)
+func loadStatistics(ctx context.Context, repo repository.Store, now time.Time) (model.Statistics, error) {
+	return repo.Statistics(ctx, now)
 }

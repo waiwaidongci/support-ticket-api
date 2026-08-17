@@ -55,7 +55,7 @@ func (s *Service) ListTickets(ctx context.Context, user model.User, filter model
 	if user.Role == model.RoleCustomer {
 		filter.CustomerID = &user.ID
 	}
-	tickets, err := loadTickets(context.Background(), s.repo, filter)
+	tickets, err := loadTickets(ctx, s.repo, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (s *Service) ListTickets(ctx context.Context, user model.User, filter model
 }
 
 func (s *Service) GetTicket(ctx context.Context, user model.User, ticketID int64) (model.Ticket, error) {
-	ticket, err := loadTicket(context.Background(), s.repo, ticketID)
+	ticket, err := loadTicket(ctx, s.repo, ticketID)
 	if err != nil {
 		return model.Ticket{}, err
 	}
@@ -104,7 +104,7 @@ func (s *Service) ClaimTicket(ctx context.Context, agent model.User, ticketID in
 	if agent.Role != model.RoleAgent {
 		return model.Ticket{}, ErrForbidden
 	}
-	ticket, err := loadTicket(context.Background(), s.repo, ticketID)
+	ticket, err := loadTicket(ctx, s.repo, ticketID)
 	if err != nil {
 		return model.Ticket{}, err
 	}
@@ -187,14 +187,14 @@ func (s *Service) History(ctx context.Context, user model.User, ticketID int64) 
 	if err := s.ensureCanView(user, ticket); err != nil {
 		return nil, err
 	}
-	return loadHistory(context.Background(), s.repo, ticketID)
+	return loadHistory(ctx, s.repo, ticketID)
 }
 
 func (s *Service) Statistics(ctx context.Context, user model.User) (model.Statistics, error) {
 	if user.Role != model.RoleSupervisor {
 		return model.Statistics{}, ErrForbidden
 	}
-	return loadStatistics(context.Background(), s.repo, s.now())
+	return loadStatistics(ctx, s.repo, s.now())
 }
 
 func (s *Service) ensureCanView(user model.User, ticket model.Ticket) error {
