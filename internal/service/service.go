@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"support-ticket-api/internal/model"
-	"support-ticket-api/internal/pkg/sla"
 	"support-ticket-api/internal/repository"
 )
 
@@ -60,16 +59,7 @@ func (s *Service) ListTickets(ctx context.Context, user model.User, filter model
 		return nil, err
 	}
 	now := s.now()
-	items := make([]model.TicketListItem, 0, len(tickets))
-	for _, ticket := range tickets {
-		status, breached := sla.Status(now, ticket.SLADueAt)
-		items = append(items, model.TicketListItem{
-			Ticket:      ticket,
-			SLAStatus:   status,
-			SLABreached: breached,
-		})
-	}
-	return items, nil
+	return buildTicketList(tickets, now), nil
 }
 
 func (s *Service) GetTicket(ctx context.Context, user model.User, ticketID int64) (model.Ticket, error) {
