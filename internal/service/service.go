@@ -126,7 +126,7 @@ func (s *Service) UpdateStatus(ctx context.Context, operator model.User, input U
 		return model.Ticket{}, fmt.Errorf("%w: unsupported status", ErrInvalidInput)
 	}
 	if !canTransition(ticket.Status, input.ToStatus) {
-		return model.Ticket{}, fmt.Errorf("%v: %s -> %s", ErrInvalidTransition, ticket.Status, input.ToStatus)
+		return model.Ticket{}, invalidTransitionError(ticket.Status, input.ToStatus)
 	}
 	if input.ToStatus == model.StatusResolved && strings.TrimSpace(input.Result) == "" {
 		return model.Ticket{}, resolveWithoutResultError()
