@@ -1,4 +1,4 @@
-# support-ticket-api__001
+# support-ticket-api
 
 ## 标准命令
 
